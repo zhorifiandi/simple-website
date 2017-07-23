@@ -1,6 +1,87 @@
-Soon to be deleted
-<% @users = User.all %>
-<% @users.each do |user| %>
-  <%= user.name %><br/>
-  <%= user.email %><br/>
-<% end %>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<!--  Session management -->
+<!--  User is only allowed to visit this page if already logged in -->
+<!--  Otherwise, they will be directed to login page -->
+<% if logged_in? %>
+  <p id="notice"><%= notice %></p>
+  <div class="container">
+    <h3>Hi, <%= current_user.name %></h3>
+    <h1>List of Images</h1>
+    <!--  Redirecting to Uploader Page -->
+    <a  href="/items/new">
+      <button type="submit" class="btn btn-primary active" style="margin-bottom: 50px;">
+        Add New Item
+      </button>
+    </a>
+    <!--  Showing all image that already uploaded -->
+    <% @items.each do |item| %>
+      <div class="container" style="margin-bottom: 50px; background: #f6f6f6; padding: 40px">
+        <div class="row">
+          <div class="col-lg-4">
+            <%= image_tag item.image.thumb.url %>
+          </div>
+          <div class="col-lg-8">
+            <!--  Button for deleting image that user uploaded -->
+            <!--  Only displayed if it's the image that they uploaded -->
+            <% if current_user.email == item.uploader %>
+              <p><strong>You uploaded this image</p>
+              <button class="btn btn-danger active"><%= link_to 'Destroy', item, method: :delete, data: { confirm: 'Are you sure?' }, style: "color: white; text-decoration: none" %></button>
+            <% else %>
+              <p><strong>Uploader: </strong><%= item.uploader %></p>
+            <% end %>
+
+            <!-- Button for showing Comment section  -->
+            <button data-toggle="collapse" data-target="#comments<%= item.id %>" class="btn btn-success active">View Comments</button>
+            <div id="comments<%= item.id %>" class="collapse container">
+              <h3>Comments:</h3>
+              <!--  Showing comment for current Image -->
+              <% comments =  Comment.where(:image_id => item.id)
+                if comments.exists?
+                 comments.each do |comment|
+              %>
+                <div class="container">
+                  <p><strong><%= comment.user_email %></strong> : <%=comment.content %></p>
+                </div>
+              <% end
+                else %>
+                  <div class="container">
+                    <p> No comment </p>
+                  </div>
+              <%end%>
+
+              <!-- Form for writing new comment -->
+              <% if logged_in? %>
+                <%= form_tag("/comment", method: "post") do %>
+                  <input type="hidden" name="image_id" value="<%= item.id%>" />
+                  <input type="hidden" name="user_email" value="<%= current_user.email%>" />
+                  <div class="form-group">
+                    <label for="usr">Write new comment:</label>
+                    <textarea name="content"  style="height: 200px; width: 400px" class="form-control" id="usr"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary active">
+                    SUBMIT
+                  </button>
+                <%end%>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <div class="container" style="margin-bottom: 50px">
+    <a href="/logout" id="danger"><p>Logout here</p></a>
+  </div>
+
+<% else
+  controller.redirect_to "/login"
+end
+%>

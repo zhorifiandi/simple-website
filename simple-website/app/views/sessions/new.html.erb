@@ -1,24 +1,78 @@
-<h1>Log in</h1>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
 
-<%
-  if logged_in?
-    controller.redirect_to current_user
-  end
-%>
+<div class="container">
+  <!--  Session management -->
+  <!--  User is only allowed to visit this page if haven't logged in -->
+  <!--  Otherwise, they will be directed to home page -->
+  <h1>Log in</h1>
+  <%
+    if logged_in?
+      controller.redirect_to "/home"
+    end
+  %>
+  <!--  Showing alert if email and password combination is wrong -->
+  <p id="danger"><%= alert %></p>
+  <!--  Form section for log in -->
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <%= form_for(:session, url: login_path) do |f| %>
+          <%= f.label :email %>
+          <%= f.email_field :email, class: 'form-control' %>
+          <%= f.label :password %>
+          <%= f.password_field :password, class: 'form-control' %>
+          <%= f.submit "Log in", class: "btn btn-primary" %>
+        <% end %>
+        <p>New user? <%= link_to "Sign up now!", signup_path %></p>
+      </div>
+    </div>
+  </div>
 
-<div class="row">
-  <div class="col-md-6 col-md-offset-3">
-    <%= form_for(:session, url: login_path) do |f| %>
-
-      <%= f.label :email %>
-      <%= f.email_field :email, class: 'form-control' %>
-
-      <%= f.label :password %>
-      <%= f.password_field :password, class: 'form-control' %>
-
-      <%= f.submit "Log in", class: "btn btn-primary" %>
+  <p id="notice"><%= notice %></p>
+  <div class="container">
+    <h1>List of Images</h1>
+    <!--  Showing all image that already uploaded -->
+    <% if @items.exists? %>
+      <% @items.each do |item| %>
+        <div class="container" style="margin-bottom: 50px; background: #f6f6f6; padding: 40px">
+          <div class="row">
+            <div class="col-lg-4">
+              <%= image_tag item.image.thumb.url %>
+            </div>
+            <div class="col-lg-8">
+              <!-- Button for showing Comment section  -->
+              <p><strong>Uploader: </strong><%= item.uploader %></p>
+              <button data-toggle="collapse" data-target="#comments<%= item.id %>" class="btn btn-success active">View Comments</button>
+              <div id="comments<%= item.id %>" class="collapse container">
+                <h3>Comments:</h3>
+                <!--  Showing comment for current Image -->
+                <% comments =  Comment.where(:image_id => item.id)
+                  if comments.exists?
+                   comments.each do |comment|
+                %>
+                    <div class="container">
+                      <p><strong><%= comment.user_email %></strong> : <%=comment.content %></p>
+                    </div>
+                <% end
+                  else %>
+                    <div class="container">
+                      <p> No comment </p>
+                    </div>
+                  <%end%>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <p> No image in here </p>
     <% end %>
-
-    <p>New user? <%= link_to "Sign up now!", signup_path %></p>
   </div>
 </div>

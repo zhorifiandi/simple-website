@@ -1,3 +1,4 @@
+<% if logged_in? %>
 <%= form_for @item, html: { multipart: true } do |f| %>
   <% if @item.errors.any? %>
     <div id="error_explanation">
@@ -10,7 +11,7 @@
       </ul>
     </div>
   <% end %>
-
+  <input type="hidden" name="uploader" value="<%= current_user.email%>"/>
   <div class="field">
     <%= f.label :image %><br>
     <%= f.file_field :image %>
@@ -21,7 +22,13 @@
     <% end %>
   </div>
 
+  <% f.hidden_field :uploader, :value => current_user.email%>
+
   <div class="actions">
-    <%= f.submit %>
+    <%= f.submit :class => "btn-primary" %>
   </div>
 <% end %>
+<% else
+    controller.redirect_to "/home"
+  end
+  %>

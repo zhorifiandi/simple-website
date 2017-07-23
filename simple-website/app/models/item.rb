@@ -1,5 +1,4 @@
 class Item < ApplicationRecord
-  serialize :comments, Array
   mount_uploader :image, ImageUploader
   validates_processing_of :image
   # validate :image_size_validation

@@ -25,6 +25,7 @@ class ItemsController < ApplicationController
   # POST /items.json
   def create
     @item = Item.new(item_params)
+    @item.uploader = params[:uploader]
 
     respond_to do |format|
       if @item.save
@@ -39,25 +40,34 @@ class ItemsController < ApplicationController
 
   # PATCH/PUT /items/1
   # PATCH/PUT /items/1.json
-  def update
-    respond_to do |format|
-      if @item.update(item_params)
-        format.html { redirect_to @item, notice: 'Item was successfully updated.' }
-        format.json { render :show, status: :ok, location: @item }
-      else
-        format.html { render :edit }
-        format.json { render json: @item.errors, status: :unprocessable_entity }
-      end
-    end
-  end
+  # def update
+  #   respond_to do |format|
+  #     if @item.update(item_params)
+  #       format.html { redirect_to @item, notice: 'Item was successfully updated.' }
+  #       format.json { render :show, status: :ok, location: @item }
+  #     else
+  #       format.html { render :edit }
+  #       format.json { render json: @item.errors, status: :unprocessable_entity }
+  #     end
+  #   end
+  # end
 
   # DELETE /items/1
   # DELETE /items/1.json
   def destroy
+    Comment.where(image_id: @item.id).destroy_all
     @item.destroy
     respond_to do |format|
-      format.html { redirect_to items_url, notice: 'Item was successfully destroyed.' }
+      format.html { redirect_to "/home", notice: 'Item was successfully destroyed.' }
       format.json { head :no_content }
+    end
+  end
+
+  def comment
+    if Comment.create(image_id: params["image_id"], user_email: params["user_email"], content: params["content"])
+      redirect_to "/users"
+    else
+      redirect_to "/"
     end
   end
 
@@ -69,6 +79,6 @@ class ItemsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def item_params
-      params.require(:item).permit(:image, :comments)
+      params.require(:item).permit(:image, :uploader)
     end
 end
